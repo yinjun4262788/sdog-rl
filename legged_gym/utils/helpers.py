@@ -134,6 +134,7 @@ def get_args():
         {"name": "--num_envs", "type": int, "help": "Number of environments to create. Overrides config file if provided."},
         {"name": "--seed", "type": int, "help": "Random seed. Overrides config file if provided."},
         {"name": "--max_iterations", "type": int, "help": "Maximum number of training iterations. Overrides config file if provided."},
+        {"name": "--change_desc", "type": str, "default": "", "help": "Description of the changes for this training run."},
     ]
     # parse arguments
     args = gymutil.parse_arguments(

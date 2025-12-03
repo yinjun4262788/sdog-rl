@@ -14,9 +14,9 @@ from legged_gym.envs.base.legged_robot_config import LeggedRobotCfg, LeggedRobot
 
 class TaskRegistry():
     def __init__(self):
-        self.task_classes = {}
-        self.env_cfgs = {}
-        self.train_cfgs = {}
+        self.task_classes = {} ## 环境类
+        self.env_cfgs = {}  ## 环境配置
+        self.train_cfgs = {}  ## 训练算法配置
     
     def register(self, name: str, task_class: VecEnv, env_cfg: LeggedRobotCfg, train_cfg: LeggedRobotCfgPPO):
         self.task_classes[name] = task_class
@@ -53,17 +53,21 @@ class TaskRegistry():
             args = get_args()
         # check if there is a registered env with that name
         if name in self.task_classes:
+            # 根据输入参数 选择环境类（必须提前注册好）
             task_class = self.get_task_class(name)
         else:
             raise ValueError(f"Task with name: {name} was not registered")
         if env_cfg is None:
             # load config files
+            # 根据环境名称 选择环境配置（必须提前注册好）
             env_cfg, _ = self.get_cfgs(name)
         # override cfg from args (if specified)
+        # 根据输入参数 覆盖环境配置
         env_cfg, _ = update_cfg_from_args(env_cfg, None, args)
         set_seed(env_cfg.seed)
         # parse sim params (convert to dict first)
         sim_params = {"sim": class_to_dict(env_cfg.sim)}
+        # 根据命令行的参数 覆盖模拟参数
         sim_params = parse_sim_params(args, sim_params)
         env = task_class(   cfg=env_cfg,
                             sim_params=sim_params,
