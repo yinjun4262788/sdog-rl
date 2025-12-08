@@ -9,6 +9,28 @@ from legged_gym.utils import get_args, task_registry
 from legged_gym.utils.helpers import class_to_dict
 import torch
 import pprint
+import json
+import urllib.request
+
+webhook_url = "https://open.feishu.cn/open-apis/bot/v2/hook/997a83f1-4ebd-4c6e-83d4-a92ef742526f"
+
+def send_feishu_notification(webhook_url, title, content):
+    """
+    发送飞书机器人消息
+    """
+    headers = {"Content-Type": "application/json"}
+    data = {
+        "msg_type": "text",
+        "content": {
+            "text": f"{title}\n{content}"
+        }
+    }
+    try:
+        req = urllib.request.Request(url=webhook_url, headers=headers, data=json.dumps(data).encode("utf-8"))
+        with urllib.request.urlopen(req) as response:
+            print(f"Feishu notification sent: {response.status}")
+    except Exception as e:
+        print(f"Failed to send Feishu notification: {e}")
 
 def save_config_to_file(env_cfg, train_cfg, log_dir, filename="this_config.txt", change_desc=None):
     """
@@ -61,6 +83,13 @@ def train(args):
     
     print("开始训练...")
     ppo_runner.learn(num_learning_iterations=train_cfg.runner.max_iterations, init_at_random_ep_len=True)
+    
+    # 训练结束后发送飞书通知
+    msg_content = f"任务名称: {args.task}\n日志路径: {ppo_runner.log_dir}"
+    if args.change_desc:
+        msg_content += f"\n修改描述: {args.change_desc}"
+    
+    send_feishu_notification(webhook_url, "【训练完成通知】", msg_content)
 
 if __name__ == '__main__':
     args = get_args()
