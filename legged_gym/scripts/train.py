@@ -11,6 +11,7 @@ import torch
 import pprint
 import json
 import urllib.request
+import subprocess
 
 webhook_url = "https://open.feishu.cn/open-apis/bot/v2/hook/997a83f1-4ebd-4c6e-83d4-a92ef742526f"
 
@@ -32,7 +33,27 @@ def send_feishu_notification(webhook_url, title, content):
     except Exception as e:
         print(f"Failed to send Feishu notification: {e}")
 
-def save_config_to_file(env_cfg, train_cfg, log_dir, filename="this_config.txt", change_desc=None):
+def transfer_logs_hardcoded(log_dir):
+    if log_dir is None:
+        print("Warning: log_dir is None, cannot transfer logs.")
+        return
+    SCP_TARGET = "vkrobot@192.168.1.200:/home/vkrobot/sdog/unitree_rl_gym/logs/rough_sdog/"
+    SSHPASS_PASSWORD = "vkrobot_2015"
+    cmd = [
+        "sshpass", "-p", SSHPASS_PASSWORD,
+        "scp",
+        "-o", "StrictHostKeyChecking=no",
+        "-o", "UserKnownHostsFile=/dev/null",
+        "-r", log_dir, SCP_TARGET
+    ]
+    try:
+        print("Transferring logs via SCP...")
+        subprocess.run(cmd, check=True)
+        print("SCP transfer completed.")
+    except Exception as e:
+        print(f"Failed to transfer logs via SCP: {e}")
+
+def save_config_to_file(env_cfg, train_cfg, log_dir, filename="a_this_config.txt", change_desc=None):
     """
     保存环境和训练配置到文件
     """
@@ -90,6 +111,7 @@ def train(args):
         msg_content += f"\n修改描述: {args.change_desc}"
     
     send_feishu_notification(webhook_url, "【训练完成通知】", msg_content)
+    transfer_logs_hardcoded(ppo_runner.log_dir)
 
 if __name__ == '__main__':
     args = get_args()
