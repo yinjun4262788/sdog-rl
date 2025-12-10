@@ -120,13 +120,23 @@ class TaskRegistry():
         
         train_cfg_dict = class_to_dict(train_cfg)
         runner = OnPolicyRunner(env, train_cfg_dict, log_dir, device=args.rl_device)
-        #save resume path before creating a new log_dir
         resume = train_cfg.runner.resume
         if resume:
-            # load previously trained model
             resume_path = get_load_path(log_root, load_run=train_cfg.runner.load_run, checkpoint=train_cfg.runner.checkpoint)
             print(f"Loading model from: {resume_path}")
-            runner.load(resume_path)
+            _orig_load = torch.load
+            def _safe_load(p, *args, **kwargs):
+                try:
+                    return _orig_load(p, *args, **kwargs)
+                except RuntimeError as e:
+                    if 'Attempting to deserialize object on CUDA device' in str(e):
+                        return _orig_load(p, map_location='cpu')
+                    raise
+            torch.load = _safe_load
+            try:
+                runner.load(resume_path)
+            finally:
+                torch.load = _orig_load
         return runner, train_cfg
 
 # make global task registry

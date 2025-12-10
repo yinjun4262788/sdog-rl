@@ -37,15 +37,33 @@ def transfer_logs_hardcoded(log_dir):
     if log_dir is None:
         print("Warning: log_dir is None, cannot transfer logs.")
         return
-    SCP_TARGET = "vkrobot@192.168.1.200:/home/vkrobot/sdog/unitree_rl_gym/logs/rough_sdog/"
+    use_port_forwarding = True
     SSHPASS_PASSWORD = "vkrobot_2015"
-    cmd = [
-        "sshpass", "-p", SSHPASS_PASSWORD,
-        "scp",
-        "-o", "StrictHostKeyChecking=no",
-        "-o", "UserKnownHostsFile=/dev/null",
-        "-r", log_dir, SCP_TARGET
-    ]
+    TARGET_DIR = "/home/vkrobot/sdog/unitree_rl_gym/logs/rough_sdog/"
+    cmd = []
+    if use_port_forwarding :
+        TARGET_IP = "192.168.31.44"
+        SCP_TARGET = f"vkrobot@{TARGET_IP}:{TARGET_DIR}"
+        cmd = [
+            "sshpass", "-p", SSHPASS_PASSWORD,
+            "scp",
+            "-P", "1080",
+            "-o", "StrictHostKeyChecking=no",
+            "-o", "UserKnownHostsFile=/dev/null",
+            "-r", log_dir, SCP_TARGET
+        ]
+    
+    else :
+        TARGET_IP = "192.168.1.200"
+        SCP_TARGET = f"vkrobot@{TARGET_IP}:{TARGET_DIR}"
+        cmd = [
+            "sshpass", "-p", SSHPASS_PASSWORD,
+            "scp",
+            "-o", "StrictHostKeyChecking=no",
+            "-o", "UserKnownHostsFile=/dev/null",
+            "-r", log_dir, SCP_TARGET
+        ]
+    
     try:
         print("Transferring logs via SCP...")
         subprocess.run(cmd, check=True)
