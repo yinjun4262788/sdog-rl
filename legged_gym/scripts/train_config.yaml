@@ -4,8 +4,9 @@ headless: true
 num_envs: 4096
 sim_device: "cuda:0"
 rl_device: "cuda:0"
-max_iterations: 4500
-change_desc: "torques = -0.0002,action_rate = -0.01,dof_pos_limits = -10.0"
+max_iterations: 100
+change_desc: "test"
+play_after_train: true
 # 其他可选参数 (注释掉的将使用默认值)
 # resume: false
 # experiment_name: "my_experiment"

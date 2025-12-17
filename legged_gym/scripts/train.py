@@ -132,6 +132,7 @@ def train(args):
     ppo_runner.learn(num_learning_iterations=train_cfg.runner.max_iterations, init_at_random_ep_len=True)
     
     # 传输日志
+    transfer_msg = ""
     transfer_msg = transfer_logs_hardcoded(ppo_runner.log_dir)
 
     # 训练结束后发送飞书通知
