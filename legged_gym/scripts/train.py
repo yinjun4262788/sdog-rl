@@ -35,14 +35,16 @@ def send_feishu_notification(webhook_url, title, content):
 
 def transfer_logs_hardcoded(log_dir):
     if log_dir is None:
-        print("Warning: log_dir is None, cannot transfer logs.")
-        return
+        msg = "Warning: log_dir is None, cannot transfer logs."
+        print(msg)
+        return msg
     use_port_forwarding = True
     SSHPASS_PASSWORD = "vkrobot_2015"
     TARGET_DIR = "/home/vkrobot/sdog/unitree_rl_gym/logs/rough_sdog/"
     cmd = []
     if use_port_forwarding :
-        TARGET_IP = "192.168.31.44"
+        #TARGET_IP = "192.168.31.44"
+        TARGET_IP = "192.168.31.74"
         SCP_TARGET = f"vkrobot@{TARGET_IP}:{TARGET_DIR}"
         cmd = [
             "sshpass", "-p", SSHPASS_PASSWORD,
@@ -54,7 +56,9 @@ def transfer_logs_hardcoded(log_dir):
         ]
     
     else :
-        TARGET_IP = "192.168.1.200"
+        #TARGET_IP = "192.168.1.200"
+        TARGET_IP = "192.168.28.200"
+        #TARGET_IP = "192.168.31.200"
         SCP_TARGET = f"vkrobot@{TARGET_IP}:{TARGET_DIR}"
         cmd = [
             "sshpass", "-p", SSHPASS_PASSWORD,
@@ -67,9 +71,13 @@ def transfer_logs_hardcoded(log_dir):
     try:
         print("Transferring logs via SCP...")
         subprocess.run(cmd, check=True)
-        print("SCP transfer completed.")
+        msg = "SCP transfer completed."
+        print(msg)
+        return msg
     except Exception as e:
-        print(f"Failed to transfer logs via SCP: {e}")
+        msg = f"Failed to transfer logs via SCP: {e}"
+        print(msg)
+        return msg
 
 def save_config_to_file(env_cfg, train_cfg, log_dir, filename="a_this_config.txt", change_desc=None):
     """
@@ -123,13 +131,17 @@ def train(args):
     print("开始训练...")
     ppo_runner.learn(num_learning_iterations=train_cfg.runner.max_iterations, init_at_random_ep_len=True)
     
+    # 传输日志
+    transfer_msg = transfer_logs_hardcoded(ppo_runner.log_dir)
+
     # 训练结束后发送飞书通知
-    msg_content = f"任务名称: {args.task}\n日志路径: {ppo_runner.log_dir}"
+    msg_content = f"[任务名称]: {args.task}\n[日志路径]: {ppo_runner.log_dir}"
     if args.change_desc:
-        msg_content += f"\n修改描述: {args.change_desc}"
+        msg_content += f"\n[修改描述]: {args.change_desc}"
     
+    msg_content += f"\n[日志传输状态]: {transfer_msg}"
+
     send_feishu_notification(webhook_url, "【训练完成通知】", msg_content)
-    transfer_logs_hardcoded(ppo_runner.log_dir)
 
 if __name__ == '__main__':
     args = get_args()
