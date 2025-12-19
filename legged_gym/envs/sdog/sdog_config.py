@@ -2,7 +2,7 @@ from legged_gym.envs.base.legged_robot_config import LeggedRobotCfg, LeggedRobot
 
 class SDOGRoughCfg( LeggedRobotCfg ):
     class init_state( LeggedRobotCfg.init_state ):
-        pos = [0.0, 0.0, 0.7 ] # x,y,z [m]
+        pos = [0.0, 0.0, 0.5 ] # x,y,z [m]
         default_joint_angles = { # = target angles [rad] when action = 0.0
             'FL_hip_joint': 0,   # [rad]
             'RL_hip_joint': 0,   # [rad]
@@ -34,7 +34,7 @@ class SDOGRoughCfg( LeggedRobotCfg ):
     class commands( LeggedRobotCfg.commands ):
         heading_command = False
         class ranges( LeggedRobotCfg.commands.ranges ):
-            lin_vel_x = [-1.0, 1.0] # 保持 X 轴移动能力
+            lin_vel_x = [0.1, 1.0] # 保持 X 轴移动能力
             lin_vel_y = [0.0, 0.0]  # 禁止 Y 轴移动
             ang_vel_yaw = [0.0, 0.0]# 禁止旋转
             heading = [0.0, 0.0]
@@ -50,22 +50,23 @@ class SDOGRoughCfg( LeggedRobotCfg ):
   
     class rewards( LeggedRobotCfg.rewards ):
         soft_dof_pos_limit = 0.9
-        base_height_target = 0.45
+        base_height_target = 0.3
         only_positive_rewards = True
         class scales( LeggedRobotCfg.rewards.scales ):
             termination = 0.
             lin_vel_z = -2.0
             ang_vel_xy = -0.05
             orientation = -0.02
-            torques = -0.00001
+            torques = -0.0002
             dof_vel = 0.
             dof_acc = -2.5e-7
-            base_height = -2.5 
+            base_height = -5
             collision = -0.05
             feet_air_time = 0.5
             feet_stumble = 0. 
-            action_rate = 0
+            action_rate = -0.01
             stand_still = 0.
+            dof_pos_limits = -10.0 # 实验 Dec17_16-53-17_验证 dof_pos_limits会影响关节摆动幅度
             
 
 class SDOGRoughCfgPPO( LeggedRobotCfgPPO ):
