@@ -306,7 +306,7 @@ if __name__ == "__main__":
         {
             "name": "overview",
             "follow": False,
-            "pos": [5.05, -5.4, 0.78],
+            "pos": [5.01, -3.8, 0.74],
             "lookat": [5.0, 5.0, 0.25],
         },
     ]
